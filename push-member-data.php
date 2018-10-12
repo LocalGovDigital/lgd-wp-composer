@@ -23,6 +23,9 @@ function inviteToSlack( $email )
     try {
         if ( empty( $_ENV['slack_token'] ) )
             return false;
+        
+        if ( !preg_match( "/^[a-z\.+\-'@]+(?>\.gov\.uk|(?>@|\.)nhs.net)$/igm", $email ) )
+            return false;
 
         $client = new Client([ 'base_uri' => 'https://localgovdigital.slack.com' ]);
 
