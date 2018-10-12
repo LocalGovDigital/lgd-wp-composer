@@ -1,7 +1,6 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
-
-putenv('GOOGLE_APPLICATION_CREDENTIALS=' . __DIR__ . '/google_credentials.json');
+require_once __DIR__ . '/settings.php';
 
 /**
  * Returns an authorized API client.
@@ -9,10 +8,11 @@ putenv('GOOGLE_APPLICATION_CREDENTIALS=' . __DIR__ . '/google_credentials.json')
  */
 function getClient()
 {
+    putenv('GOOGLE_APPLICATION_CREDENTIALS=' . __DIR__ . '/google_credentials.json');
+
     $client = new Google_Client();
     $client->useApplicationDefaultCredentials();
 
-    // $client->setApplicationName('LocalGov Digital Membership Register');
     $client->setScopes(Google_Service_Sheets::SPREADSHEETS);
 
     return $client;
@@ -21,25 +21,27 @@ function getClient()
 function inviteToSlack( $email )
 {
     try {
-        if ( empty( $_ENV['slack_token'] ) )
-            return false;
-        
-        if ( !preg_match( "/^[a-z\.+\-'@]+(?>\.gov\.uk|(?>@|\.)nhs.net)$/igm", $email ) )
+        // If there's no Slack token, don't bother
+        if ( empty( SLACK_TOKEN ) )
             return false;
 
-        $client = new Client([ 'base_uri' => 'https://localgovdigital.slack.com' ]);
+            // Only do this for gov.uk or NHS emails for now
+        if ( !preg_match( '/^[a-z\.+\-@]+(?>\.gov\.uk|(?>@|\.)nhs.net)$/im', $email ) )
+            return false;
+
+        $client = new GuzzleHttp\Client([ 'base_uri' => 'https://localgovdigital.slack.com' ]);
 
         $response = $client->request('POST', '/api/users.admin.invite', [
             'form_params' => [
                 'email' => $email,
-                'token' => $_ENV['slack_token'],
+                'token' => SLACK_TOKEN,
                 'set_active' => true
             ]
         ]);
-
+        
         $body = json_decode( $response->getBody() );
 
-        return $body.ok;
+        return $body->{'ok'};
 
     } catch (Exception $e) {
         return false;
