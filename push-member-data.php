@@ -1,14 +1,14 @@
 <?php
 require __DIR__ . '/vendor/autoload.php';
 
+putenv('GOOGLE_APPLICATION_CREDENTIALS=' . __DIR__ . '/google_credentials.json');
+
 /**
  * Returns an authorized API client.
  * @return Google_Client the authorized client object
  */
 function getClient()
 {
-    putenv('GOOGLE_APPLICATION_CREDENTIALS=' . __DIR__ . '/google_credentials.json');
-
     $client = new Google_Client();
     $client->useApplicationDefaultCredentials();
 
