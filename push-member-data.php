@@ -25,8 +25,15 @@ function inviteToSlack( $email )
         if ( empty( SLACK_TOKEN ) )
             return false;
 
-            // Only do this for gov.uk or NHS emails for now
-        if ( !preg_match( '/^[a-z\.+\-@]+(?>\.gov\.uk|(?>@|\.)nhs.net)$/im', $email ) )
+        /* Only do this for:
+            - *.gov.uk
+            - *.police.uk
+            - *.nhs.uk
+            - (*.)nhs.net
+            - (*.)gov.scot
+            - (*.)gov.wales
+         */
+        if ( !preg_match( '^[\w\.+\-]+@(?>[\w\.\-]+\.(?>gov|police|nhs)\.uk|(?:[\w\.\-]+\.)?(?>nhs.net|gov.scot|gov.wales))$/i', $email ) )
             return false;
 
         $client = new GuzzleHttp\Client([ 'base_uri' => 'https://localgovdigital.slack.com' ]);
